@@ -1,0 +1,90 @@
+1.
+
+Descărcați noul vdi și creați masina virtuala (Ubuntu 14).
+
+osboxes@osboxes:~/Desktop/SI_Labs/Lab_06$ ls
+build/  poky/  zImage
+
+qemu-system-arm -machine versatilepb -cpu arm1176 -kernel zImage -append "root=/dev/sda rw" -hda build/tmp/deploy/images/raspberrypi/rpi-basic-image-raspberrypi.ext3
+
+User root, fara parola.
+
+.
+├── conf
+│   	└── layer.conf
+└── recipes
+    	└── hello
+        	 ├── hello
+       		 │   └── hello.c
+       		 └── hello.bb
+
+
+Din poky/:
+source oe-init-build-env ../build/
+
+În același terminal, din build/:
+bitbake hello
+
+3.
+Creați directorul images în meta-labsi/recipes/
+Creați rețeta rpi-hello-image.bb în meta-labsi/recipes/images/:
+-----------
+require recipes-core/images/rpi-basic-image.bb
+
+IMAGE_INSTALL += "hello"
+-----------
+
+sudo chmod +w /var/tmp/
+
+bitbake rpi-hello-image
+
+qemu-system-arm -machine versatilepb -cpu arm1176 -kernel zImage -append "root=/dev/sda rw" -hda build/tmp/deploy/images/raspberrypi/rpi-hello-image-raspberrypi.ext3
+
+login cu root
+
+hello
+4. (bonus)
+Creați directorul poky/meta-raspberrypi/recipes-core/base-files/ și poky/meta-raspberrypi/recipes-core/base-files/base-files/
+
+Creați fișierul hostname în poky/meta-raspberry/recipes-core/base-files/base-files/ și scrieți numele nou.
+
+Creați fișierul base-files_3.0.14.bbappend în poky/meta-raspberry/recipes-core/base-files/:
+--------------
+FILESEXTRAPATHS_prepend := "${THISDIR}/${PN}:"
+
+SRC_URI += "file://hostname \
+            "
+
+do_install_append () {
+    install -m 0644 ${WORKDIR}/hostname ${D}${sysconfdir}
+}
+-----------------
+
+meta -> conf -> layer.conf: BBFILES += "${LAYERDIR}/recipes-*/*/*.bb \
+        ${LAYERDIR}/recipes-*/*/*.bbappend"
+
+
+De asemenea, trebuie modificata si variabila PR din reteta basefile:
+
+
+recipes-core/base-files/base-files_3.0.14.bb:
+
+SUMMARY = "Miscellaneous files for the base system"
+
+DESCRIPTION = "The base-files package creates the basic system directory structure and provides a small set of key configuration files for the system."
+
+SECTION = "base"
+
+PR = “r891”
+
+LICENSE = "GPLv2"
+
+bitbake rpi-basic-image
+
+qemu-system-arm -machine versatilepb -cpu arm1176 -kernel zImage -append "root=/dev/sda rw" -hda build/tmp/deploy/images/raspberrypi/rpi-basic-image-raspberrypi.ext3
+
+
+
+
+
+
