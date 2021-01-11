@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     start_color();
 
     for (auto i = 1; i < 8; ++i)
-	    init_pair(i, i, i);
+	    init_pair(i, 7 - i, i);
 
     auto line = ""s;
     while (getline(input, line))
@@ -38,7 +38,7 @@ int main(int argc, char* argv[])
                 case '\\':
                     colour = COLOR_GREEN; hold = false; break;
                 case '|': colour = COLOR_BLACK; hold = !hold; break;
-                case '^': colour = COLOR_YELLOW; break;
+                case '^': colour = COLOR_YELLOW; hold = true; break;
                 case '~': colour = COLOR_RED; break;
                 case '`': colour = COLOR_BLUE; break;
                 case '*': colour = COLOR_MAGENTA; break;
@@ -47,7 +47,8 @@ int main(int argc, char* argv[])
             }
 
             attron(COLOR_PAIR(colour));
-            mvwprintw(stdscr, y, x++, "%c", ' ');
+            auto c = (i == '|') ? '|' : ' ';
+            mvwprintw(stdscr, y, x++, "%c", c);
             attroff(COLOR_PAIR(colour));
         }
 

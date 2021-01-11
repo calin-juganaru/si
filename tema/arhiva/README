@@ -1,0 +1,48 @@
+                        Fuego, împodobitorul de brazi!
+
+    Programul fuego primește ca parametru un fișier brad, îl împodobește
+folosind biblioteca ncurses și îl afișează la /dev/tty0. Pentru realizarea
+acestuia a fost necesară crearea unei rețete cu următoarea structură:
+    .
+    ├── conf
+    │   └── layer.conf: în plus față de un layer obișnuit, acesta și
+    │                   setează parola utilizatorului root
+    └── recipes
+        ├── fuego
+        │   ├── fuego
+        |   │   ├── fuego.cpp: fișierul sursă C++ ce implementează algoritmul
+        |   |   │               de împodobire a bradului, primind numele unui
+        |   |   │               fișier ca parametru, parsând fiecare linie
+        |   |   │               citită, din care substituie caracterele și
+        |   |   │               spațiile dintre acestea cu celule colorate
+        |   |   │               conform enunțului, și afișând bradul la stdout
+        │   │   ├── index.html: fișier html pentru pagina web principală; aici
+        |   |   │               există două butoane, pentru a selecta bradul
+        |   |   │               din sistemul local de fișiere și pentru a-l
+        |   |   │               trimite spre împodobire server-ului
+        │   │   └── script.php: script apelat automat la încărcarea din pagină
+        │   │                   a unui brad; acesta îl salvează în imaginea de
+        │   │                   Raspberry Pi cu numele de brad, apelează fuego
+        │   │                   pe el și redirectează ieșirea la /dev/tty0
+        │   └── fuego.bb: compilează programul fuego și copiază în noul sistem
+        │                   de fișiere executabilul, index.html și script.php
+        └── images
+            └── rpi-fuego-image.bb: instalează imaginile de avahi, lighttpd,
+                                    fastcgi, php, și, bineînțeles, fuego
+
+    În plus, au fost necesare modificări și în următoarele fișiere:
+    - /build/conf/bblayers.conf: adăugat calea către noua rețetă
+    - /meta/recipes-core/base-files/base-files/hostname: noul nume al mașinii
+    - /meta/recipes-core/base-files/base-files_3.0.14.bbappend: pentru a lua în
+        calcul noul fișier hostname
+    - /meta/recipes-extended/lighttpd/lighttpd/lighttpd.conf: activat fastcgi
+    - /poky/meta-openembedded/: pentru pachete suplimentare, clonat repo-ul
+        git://git.openembedded.org/meta-openembedded
+
+    Alte mențiuni:
+    - programul a fost scris în C++14 și compilat cu optimizarea pentru spațiu
+    - tulpina bradului, pentru a fi vizibilă, are caracterele '|' afișate cu
+        alb, pe fundal negru, dar spațiile dintre acestea sunt întotdeauna negre
+    - bradul va fi afișat pe ecranul de la QEMU imediat ce este trimis din pagina
+        web, până la prima apăsare de tastă în QEMU sau până la încărcarea unui
+        nou fișier brad
